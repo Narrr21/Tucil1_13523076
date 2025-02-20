@@ -3,10 +3,15 @@ package ui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import main.Solver;
@@ -18,13 +23,10 @@ public class MainMenu {
     }
 
     private static void placeButton(JPanel panel, JFrame frame) {
-    	// Set vertical layout
     	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-    	// Add top glue to center buttons vertically
     	panel.add(Box.createVerticalGlue());
 
-    	// Create buttons with consistent style
     	JButton btnInput = createButton("📂", "Input");
     	JButton btnKeluar = createButton("🚪", "Keluar");
 
@@ -36,7 +38,7 @@ public class MainMenu {
         // Input Action
         btnInput.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File("./text/input"));
+            fileChooser.setCurrentDirectory(new File("./input"));
 
             int response = fileChooser.showOpenDialog(frame);
             if (response == JFileChooser.APPROVE_OPTION) {
@@ -62,12 +64,8 @@ public class MainMenu {
         btnKeluar.addActionListener(e -> System.exit(0));
     }
     
-	// Helper method to create styled buttons
 	private static JButton createButton(String icon, String text) {
-	    JButton button = new JButton("<html><div style='display: flex; align-items: center; justify-content: center;'>"
-	            + "<span style='margin-right: 10px;'>" + icon + "</span>" // Icon on the left
-	            + "<span style='flex-grow: 1; text-align: center;'>" + text + "</span>" // Centered text
-	            + "</div></html>");
+	    JButton button = new JButton("<html><div style='text-align: center;'>" + icon + " " + text + "</div></html>");
 	    button.setPreferredSize(new Dimension(200, 40));
 	    button.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    return button;
@@ -76,8 +74,7 @@ public class MainMenu {
 	
     private static void showSolutionPopup(Solver solver) {
         String solution = solver.solution.result;
-        char[][] boardState = solver.solution.board;
-        long timeTaken = solver.timer.getTime();
+        double timeTaken = solver.timer.getTime();
 
         JFrame popup = new JFrame("Solution Result");
         popup.setSize(500, 400);
@@ -91,42 +88,39 @@ public class MainMenu {
 
         String text = "<html><div style='text-align: center;'>" +
                 "<b>Solution:</b><br>" + solution.replace("\n", "<br>") +
-                "<br><br><b>Time Taken:</b> " + (timeTaken / 1_000_000.0) + " ms" +
+                "<br><br><b>Time Taken:</b> " + (timeTaken) + " ms" +
                 "</div></html>";
 
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Scroll pane for solution text
         JScrollPane scrollPane = new JScrollPane(label);
         scrollPane.setBorder(null);
 
-        // Button to transform the board into an image puzzle
         JButton convertButton = new JButton("Show Image Puzzle");
         convertButton.setFont(new Font("Arial", Font.BOLD, 14));
         convertButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showImagePuzzle(boardState);
+                showImagePuzzle(solver);
             }
         });
 
-        // Panel for button
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(convertButton);
 
-        // Add components to the frame
+        // Add components
         panel.add(scrollPane, BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.SOUTH);
         popup.add(panel, BorderLayout.CENTER);
 
-        // Show popup
         popup.setVisible(true);
     }
     
-    private static void showImagePuzzle(char[][] board) {
+    private static void showImagePuzzle(Solver solver) {
         JFrame puzzleFrame = new JFrame("Image Puzzle");
+        char[][] board = solver.puzzleData.Board;
         puzzleFrame.setSize(400, 400);
         puzzleFrame.setLocationRelativeTo(null);
         puzzleFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -134,7 +128,7 @@ public class MainMenu {
         JPanel gridPanel = new JPanel();
         int rows = board.length;
         int cols = board[0].length;
-        gridPanel.setLayout(new GridLayout(rows, cols, 2, 2));
+        gridPanel.setLayout(new GridLayout(rows, cols, 0, 0));
 
         Map<Character, Color> colorMap = new HashMap<>();
         Color[] colors = {
@@ -176,14 +170,69 @@ public class MainMenu {
             for (char c : row) {
                 JLabel label = new JLabel(String.valueOf(c), SwingConstants.CENTER);
                 label.setFont(new Font("Arial", Font.BOLD, 24));
-                label.setForeground(Color.WHITE); // Set text color to white
+                label.setForeground(Color.WHITE);
                 label.setOpaque(true);
-                label.setBackground(colorMap.getOrDefault(c, Color.BLACK)); // Default to black if not mapped
+                label.setBackground(colorMap.getOrDefault(c, Color.BLACK)); // Default black
                 gridPanel.add(label);
             }
         }
 
-        puzzleFrame.add(gridPanel);
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> {
+            String filename;
+            File file;
+            
+            do {
+                filename = JOptionPane.showInputDialog("Enter file name:");
+                if (filename == null || filename.trim().isEmpty()) {
+                    return;
+                }
+                file = new File("./test/" + filename + ".jpg");
+                
+                if (file.exists()) {
+                    JOptionPane.showMessageDialog(null, "File already exists. Please enter a different name.", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
+            } while (file.exists());
+            
+            saveImage(gridPanel, filename + ".jpg");
+            saveText(solver, filename + ".txt");
+        });
+        
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(gridPanel, BorderLayout.CENTER);
+        mainPanel.add(saveButton, BorderLayout.SOUTH);
+        
+        puzzleFrame.add(mainPanel);
         puzzleFrame.setVisible(true);
+    }
+
+    private static void saveImage(JPanel panel, String filename) {
+        BufferedImage image = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = image.createGraphics();
+        panel.paint(g2d);
+        g2d.dispose();
+        try {
+            ImageIO.write(image, "jpg", new File("./test/" + filename));
+            System.out.println("Image saved as " + filename);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private static void saveText(Solver solver, String filename) {
+        char[][] board = solver.solution.board;
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("./test/" + filename))) {
+            for (char[] row : board) {
+                writer.write(new String(row));
+                writer.newLine();
+            }
+            writer.write("Attempt taken : " + solver.puzzleData.Attempt);
+            writer.newLine();
+            writer.write("Time taken : " + solver.timer.getTime());
+            System.out.println("Text saved as " + filename);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }

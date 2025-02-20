@@ -1,8 +1,11 @@
 package main;
 
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class PuzzleData {
     public int Wide, Length, Puzzle; // Store board dimensions and shape count
@@ -11,6 +14,36 @@ public class PuzzleData {
     public List<Shape> availShape;
     public char[][] Board;
     public int Attempt;
+    
+    Map<Character, Color> colorMap = new HashMap<>();
+    Color[] colors = {
+        new Color(255, 0, 0),      // A - Red
+        new Color(0, 0, 255),      // B - Blue
+        new Color(0, 128, 0),      // C - Green
+        new Color(255, 165, 0),    // D - Orange
+        new Color(255, 0, 255),    // E - Magenta
+        new Color(128, 0, 128),    // F - Purple
+        new Color(0, 255, 255),    // G - Cyan
+        new Color(139, 69, 19),    // H - Brown
+        new Color(255, 192, 203),  // I - Pink
+        new Color(128, 128, 0),    // J - Olive
+        new Color(255, 223, 0),    // K - Gold
+        new Color(64, 224, 208),   // L - Turquoise
+        new Color(128, 0, 0),      // M - Maroon
+        new Color(0, 255, 127),    // N - Spring Green
+        new Color(255, 99, 71),    // O - Tomato
+        new Color(70, 130, 180),   // P - Steel Blue
+        new Color(210, 105, 30),   // Q - Chocolate
+        new Color(0, 139, 139),    // R - Dark Cyan
+        new Color(184, 134, 11),   // S - Dark Goldenrod
+        new Color(154, 205, 50),   // T - Yellow Green
+        new Color(75, 0, 130),     // U - Indigo
+        new Color(255, 140, 0),    // V - Dark Orange
+        new Color(0, 128, 128),    // W - Teal
+        new Color(123, 104, 238),  // X - Medium Slate Blue
+        new Color(199, 21, 133),   // Y - Medium Violet Red
+        new Color(47, 79, 79)      // Z - Dark Slate Gray
+    };
 
     public PuzzleData(int N, int M, int P, String S, List<Shape> arrayOfShapes) {
         this.Wide = M;
@@ -26,18 +59,40 @@ public class PuzzleData {
                 Board[i][j] = ' ';
             }
         }
+        char letter = 'A';
+        for (Color color : colors) {
+            colorMap.put(letter, color);
+            letter++;
+        }
     }
     
     public void printBoard() {
-    	// Debug
-    	System.out.println("Board : ");
+        final String RESET = "\u001B[0m";
+        final String BLACK_BACKGROUND = "\u001B[40m";
+        
+        // Debug
+        System.out.println("Board :");
         for (char[] row : Board) {
-            System.out.println(new String(row));
+            for (char cell : row) {
+                if (cell == ' ') {
+                    System.out.print(BLACK_BACKGROUND + "   " + RESET);
+                } else {
+                    Color color = colorMap.get(cell);
+                    if (color != null) {
+                        String ANSI_COLOR = String.format("\u001B[38;2;%d;%d;%dm", 
+                            color.getRed(), color.getGreen(), color.getBlue());
+                        System.out.print(ANSI_COLOR + " " + cell + " " + RESET);
+                    } else {
+                        System.out.print(" " + cell + " ");
+                    }
+                }
+            }
+            System.out.println();
         }
     }
     
     public Boolean solving(int x, int y) {
-        System.out.println("Central X : " + x + " Y : " + y);
+//        System.out.println("Central X : " + x + " Y : " + y);
         if (isBoardSolved()) {
         	System.out.println("Done");
         	return true;
@@ -52,8 +107,9 @@ public class PuzzleData {
 
             while (iterator.hasNext()) {
                 Shape set = iterator.next();
+                Attempt++;
                 if (isValidSet(set, x, y)) {
-	                printBoard();
+//	                printBoard();
                     availShape.remove(shape);
                     if (solving(x, y + 1)) {
                         return true;
@@ -92,7 +148,7 @@ public class PuzzleData {
         }
 
         placeShape(set, adjustedX, adjustedY);
-        set.printShape();
+//        set.printShape();
         return true;
     }
     

@@ -56,8 +56,8 @@ public class Solver {
     
     private Shape readShape(String shapeline) {
     	// debug
-    	System.out.print("Line : ");
-    	System.out.println(shapeline);
+//    	System.out.print("Line : ");
+//    	System.out.println(shapeline);
     	String[] parts = shapeline.split("-");
     	int max = 1;
     	for (String part : parts) {
@@ -96,6 +96,8 @@ public class Solver {
         puzzleData.solving(0, 0);
         timer.stopTimer();
         timer.printTime();
+        System.out.println("Attempt : " + puzzleData.Attempt);
+        puzzleData.printBoard();
         if (puzzleData.availShape.isEmpty() || puzzleData.isBoardSolved()) {
         	solution.result = "Solution computed !";
         } else {
@@ -122,6 +124,7 @@ public class Solver {
     }
 
     public void printSolution() {
+    	System.out.println("Attempt : " + puzzleData.Attempt);
         System.out.println("Solution Output: " + solution.result);
         System.out.println("Solution Board: ");
         puzzleData.printBoard();

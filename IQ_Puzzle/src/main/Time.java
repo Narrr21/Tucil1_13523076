@@ -1,44 +1,44 @@
 package main;
 
 public class Time {
+	public boolean run;
     public long startTime;
     public long endTime;
-    private boolean running;
 
     public void startTimer() {
         startTime = System.nanoTime();
-        running = true;
-        System.out.println("Timer started...");
+        run = true;
+        System.out.println("Timer start");
     }
 
     public void stopTimer() {
-        if (running) {
+        if (run) {
             endTime = System.nanoTime();
-            running = false;
-            System.out.println("Timer stopped.");
+            run = false;
+            System.out.println("Timer stop");
         } else {
             System.out.println("Timer is not running.");
         }
     }
 
     public void printTime() {
-        if (running) {
-            long elapsedTime = System.nanoTime() - startTime;
-            System.out.println("Elapsed time: " + elapsedTime / 1_000_000.0 + " ms");
+    	long timeTaken;
+        if (run) {
+            timeTaken = System.nanoTime() - startTime;
         } else {
-            long elapsedTime = endTime - startTime;
-            System.out.println("Total elapsed time: " + elapsedTime / 1_000_000.0 + " ms");
+            timeTaken = endTime - startTime;
         }
+        System.out.println("Time taken : " + timeTaken / 1_000_000.0 + " ms");
     }
     
-    public long getTime() {
-    	long elapsedTime;
-        if (running) {
-            elapsedTime = System.nanoTime() - startTime;
+    public double getTime() {
+    	long timeTaken;
+        if (run) {
+            timeTaken = System.nanoTime() - startTime;
         } else {
-            elapsedTime = endTime - startTime;
+            timeTaken = endTime - startTime;
         }
-        return elapsedTime;
+        return (timeTaken / 1_000_000.0);
     }
     
     public void delay(int time) {
