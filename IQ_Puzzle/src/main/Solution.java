@@ -1,13 +1,11 @@
 package main;
 
 public class Solution {
-    public String result; // Output message
-    public int time;
-    public String picture;
+    public String result;
+    public char[][] board;
 
-    public Solution() {
-        this.result = "No solution computed yet.";
-        this.time = 0;
-        this.picture = "";
+    public Solution(String msgres, char[][] board) {
+        this.result = msgres;
+        this.board = board;
     }
 }

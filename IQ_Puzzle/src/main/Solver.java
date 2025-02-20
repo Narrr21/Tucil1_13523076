@@ -4,12 +4,16 @@ import java.io.*;
 import java.util.*;
 
 public class Solver {
-    private PuzzleData puzzleData; // Store puzzle input
-    private Solution solution; // Store solver output
+    public PuzzleData puzzleData; // Store puzzle input
+    public Solution solution; // Store solver output
+    public Time timer;
 
     public Solver(File file) {
         this.puzzleData = readPuzzleFile(file);
-        this.solution = new Solution(); // Placeholder, modify as needed
+        String msgres = new String();
+        Time Timer = new Time();
+        this.timer = Timer;
+        this.solution = new Solution(msgres, puzzleData.Board);
     }
 
     private PuzzleData readPuzzleFile(File file) {
@@ -25,19 +29,24 @@ public class Solver {
 
             // Read puzzle shapes
             List<Shape> arrayOfShapes = new ArrayList<>();
-            for (int i = 0; i < P; i++) {
-                String shapeLines = "";
-                String line;
+            String shapeLines = "";
+            String line;
+            char last = 'A';
 
-                // Read shape block
-                while ((line = br.readLine()) != null) {
-                    if (line.isEmpty()) break; // Skip empty lines
-                    shapeLines += line;
-                    shapeLines += "\n";
+            // Read shape block
+            while ((line = br.readLine()) != null) {
+            	if (last != line.trim().charAt(0)) {
+                   	// System.out.println(last);
+                   	last = line.trim().charAt(0);
+                   	// System.out.println(last);
+                   	arrayOfShapes.add(readShape(shapeLines));
+                   	shapeLines = "";
                 }
-                arrayOfShapes.add(readShape(shapeLines));
+                shapeLines += line;
+                shapeLines += "-";
+                last = line.trim().charAt(0);
             }
-
+            arrayOfShapes.add(readShape(shapeLines));
             return new PuzzleData(N, M, P, S, arrayOfShapes);
         } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
@@ -47,11 +56,32 @@ public class Solver {
     
     private Shape readShape(String shapeline) {
     	// debug
-        int length = 1;
-        int wide = 1;
-        char symbol = 'G';
+    	System.out.print("Line : ");
+    	System.out.println(shapeline);
+    	String[] parts = shapeline.split("-");
+    	int max = 1;
+    	for (String part : parts) {
+    		if (max < part.length()) max = part.length();
+    	}
+        int length = max;
+        int wide = parts.length;
+        char symbol = shapeline.charAt(0);
+		// Debug
+//		System.out.println(wide);
+//		System.out.println(length);
+		
         List<int[]> dots = new ArrayList<>();
-        dots.add(new int[]{0, 0});
+        for (int i = 0; i < wide; i++) {
+        	for (int j = 0; j < parts[i].length(); j++) {
+        		if (parts[i].charAt(j) == symbol) {
+        			// Debug
+//        			System.out.print(i);
+//        			System.out.println(j);
+        			
+        			dots.add(new int[]{i, j});
+        		}
+        	}
+        }
     	
     	return new Shape(length, wide, symbol, dots);
     }
@@ -61,10 +91,16 @@ public class Solver {
             System.out.println("No puzzle data to solve.");
             return;
         }
-
+        timer.startTimer();
         // Solving
-        System.out.println("Solving puzzle...");
-        solution.result = "Solution computed!"; // Output
+        puzzleData.solving(0, 0);
+        timer.stopTimer();
+        timer.printTime();
+        if (puzzleData.availShape.isEmpty() || puzzleData.isBoardSolved()) {
+        	solution.result = "Solution computed !";
+        } else {
+        	solution.result = "Solution not found !";
+        }
     }
 
     public void printPuzzle() {
@@ -74,23 +110,21 @@ public class Solver {
             return;
         }
 
-        System.out.println("Board Size: " + puzzleData.N + " x " + puzzleData.M);
-        System.out.println("Number of Shapes: " + puzzleData.P);
-        System.out.println("State: " + puzzleData.S);
+        System.out.println("Board Size: " + puzzleData.Wide + " x " + puzzleData.Length);
+        System.out.println("Number of Shapes: " + puzzleData.Puzzle);
+        System.out.println("State: " + puzzleData.State);
         System.out.println("Shapes:");
         for (Shape shape : puzzleData.arrayOfShapes) {
         	shape.printShape();
             System.out.println();
+            new SetShape(shape).printSet();
         }
     }
 
     public void printSolution() {
-    	// Debug
-        if (solution == null) {
-            System.out.println("No solution available.");
-            return;
-        }
-
         System.out.println("Solution Output: " + solution.result);
+        System.out.println("Solution Board: ");
+        puzzleData.printBoard();
+        timer.printTime();
     }
 }
