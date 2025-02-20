@@ -98,7 +98,7 @@ public class Solver {
         timer.printTime();
         System.out.println("Attempt : " + puzzleData.Attempt);
         puzzleData.printBoard();
-        if (puzzleData.availShape.isEmpty() || puzzleData.isBoardSolved()) {
+        if (puzzleData.isBoardSolved()) {
         	solution.result = "Solution computed !";
         } else {
         	solution.result = "Solution not found !";

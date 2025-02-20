@@ -172,6 +172,11 @@ public class PuzzleData {
                 if (Board[i][j] == ' ') return false;
             }
         }
-        return true;
+        if (availShape.isEmpty()) {
+        	return true;
+        } else {
+        	return false;
+        }
+        
     }
 }
