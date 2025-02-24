@@ -1,0 +1,6 @@
+AAB
+ABB
+ABB
+AAB
+Attempt taken : 15
+Time taken : 0.1436

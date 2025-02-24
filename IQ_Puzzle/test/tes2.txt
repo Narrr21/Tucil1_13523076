@@ -1,0 +1,8 @@
+ABBB
+AABC
+AAAC
+EEDD
+FEED
+FGGG
+Attempt taken : 1560
+Time taken : 0.7408

@@ -1,0 +1,8 @@
+EEAAB
+EAABB
+AADDB
+ACFDD
+CCFFF
+CCGGF
+Attempt taken : 693583
+Time taken : 116.3799

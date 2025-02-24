@@ -1,0 +1,7 @@
+ABBEE
+AABEE
+FFFEC
+DFFCC
+DDGGG
+Attempt taken : 12851
+Time taken : 19.3434
